@@ -1,0 +1,27 @@
+{
+  "name": "base-questions",
+  "description": "Plugin for base-methods that adds methods for prompting the user and storing the answers on a project-by-project basis.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/jonschlinkert/base-questions",
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "repository": "jonschlinkert/base-questions",
+  "bugs": {
+    "url": "https://github.com/jonschlinkert/base-questions/issues"
+  },
+  "license": "MIT",
+  "files": [
+    "index.js"
+  ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "keywords": []
+}
