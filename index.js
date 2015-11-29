@@ -57,6 +57,9 @@ module.exports = function(base, options) {
       var args = [].slice.call(arguments);
       var cb = args.pop();
       var question = utils.toChoices.apply(null, args);
+      if (!question.hasOwnProperty('save')) {
+        question.save = false;
+      }
       app.questions.set(question.name, question);
       return this.ask(question.name, cb);
     });
