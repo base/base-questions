@@ -36,6 +36,15 @@ describe('base-questions', function() {
   it('should expose a `ask` function on "app.questions"', function() {
     assert.equal(typeof app.questions.ask, 'function');
   });
+
+  it('should ask common questions', function(cb) {
+    this.timeout(20000);
+
+    app.ask({force: true}, function(err, answers) {
+      console.log(answers)
+      cb();
+    });
+  });
 });
 
 describe('errors', function(cb) {

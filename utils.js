@@ -27,6 +27,7 @@ require = utils;
 require('extend-shallow', 'extend');
 require('question-store', 'questions');
 require('common-questions');
+require('to-choices');
 
 /**
  * Restore `require`

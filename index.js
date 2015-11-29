@@ -53,5 +53,14 @@ module.exports = function(base, options) {
     }
 
     app.define('questions', questions);
+    app.define('choices', function() {
+      var args = [].slice.call(arguments);
+      var cb = args.pop();
+      var question = utils.toChoices.apply(null, args);
+      app.questions.set(question.name, question);
+      return this.ask(question.name, cb);
+    });
+
+    app.define('ask', questions.ask.bind(questions));
   };
 };
