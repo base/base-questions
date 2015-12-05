@@ -25,19 +25,24 @@ describe('base-questions', function() {
     assert.equal(typeof app.questions, 'object');
   });
 
-  it('should expose a `set` function on "app.questions"', function() {
+  it('should expose a `set` method on "app.questions"', function() {
     assert.equal(typeof app.questions.set, 'function');
   });
-
-  it('should expose a `get` function on "app.questions"', function() {
+  it('should expose a `get` method on "app.questions"', function() {
     assert.equal(typeof app.questions.get, 'function');
   });
-
-  it('should expose a `ask` function on "app.questions"', function() {
+  it('should expose an `ask` method on "app.questions"', function() {
     assert.equal(typeof app.questions.ask, 'function');
   });
 
-  it('should ask common questions', function(cb) {
+  it('should expose an `ask` method on "app"', function() {
+    assert.equal(typeof app.ask, 'function');
+  });
+  it('should expose a `question` method on "app"', function() {
+    assert.equal(typeof app.question, 'function');
+  });
+
+  it.skip('should ask common questions', function(cb) {
     this.timeout(20000);
 
     app.ask({force: true}, function(err, answers) {
@@ -48,13 +53,17 @@ describe('base-questions', function() {
 });
 
 describe('errors', function(cb) {
+  beforeEach(function() {
+    app = new Base();
+  });
+
   it('should throw an error when the store plugin is not registered', function(cb) {
     try {
-      questions({});
+      app.use(questions());
       cb(new Error('expected an error'));
     } catch (err) {
       assert(err);
-      assert.equal(err.message, 'base-questions requires the base-store plugin to be registered first');
+      assert.equal(err.message, 'base-questions requires the "base-store" plugin to be registered first');
       cb();
     }
   });
