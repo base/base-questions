@@ -1,6 +1,6 @@
 'use strict';
 
-var questions = require('./');
+var questions = require('..');
 var assemble = require('assemble-core');
 var store = require('base-store');
 var argv = require('base-argv');
