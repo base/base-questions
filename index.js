@@ -23,7 +23,6 @@ module.exports = function(options) {
     var Questions = utils.questions;
     var questions = new Questions(opts);
 
-    // pre-load data from `cache.data` onto answer store
     questions.setData(app.cache.data);
 
     // re-initialize when specified by the user
@@ -34,8 +33,15 @@ module.exports = function(options) {
     // listen for `ask` event and attempt to set the default
     // value using stored data, before the question is asked
     questions.on('ask', function(key, question, answers) {
+      var answer = utils.get(app.cache.data, key);
+
+      if (answer) {
+        question.answer.set(answer);
+        return;
+      }
+
       if (!question.isAnswered(opts.locale) && store.has(key)) {
-        question.setDefault(store.get(key));
+        question.answer.setDefault(store.get(key));
       }
     });
 
@@ -55,7 +61,6 @@ module.exports = function(options) {
      */
 
     opts.questions = utils.commonQuestions(opts.questions);
-
     for (var key in opts.questions) {
       questions.visit(key, opts.questions[key]);
     }
