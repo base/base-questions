@@ -15,8 +15,11 @@ require = utils;
 require('extend-shallow', 'extend');
 require('question-store', 'questions');
 require('common-questions');
+require('micromatch', 'mm');
+require('set-value', 'set');
 require('get-value', 'get');
 require('to-choices');
+require('for-own');
 require = fn;
 
 /**

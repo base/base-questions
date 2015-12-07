@@ -19,28 +19,59 @@ module.exports = function(options) {
       throw new TypeError(msg);
     }
 
-    var opts = utils.extend({}, app.options, base.options, options);
-    var Questions = utils.questions;
-    var questions = new Questions(opts);
-
-    questions.setData(app.cache.data);
-
-    // re-initialize when specified by the user
-    if (opts.init || opts.force) {
-      questions.options.forceAll = true;
+    function updateOpts() {
+      var baseOpts = (base.options && base.options.questions) || {};
+      var appOpts = (app.options && app.options.questions) || {};
+      options = utils.extend({}, appOpts, baseOpts, options);
     }
+
+    var Questions = utils.questions;
+    var questions = new Questions(options);
+    var opts = questions.options;
+
+    // app.on('option', function(key, val) {
+    //   if (/questions\./.test(key)) {
+    //     utils.set(opts, key, val);
+    //   }
+    // });
+
+    // force all questions to be asked when requested by the user
+    if (opts.init === true || opts.force === true) {
+      opts.forceAll = true;
+    }
+
+    /**
+     * Pre-populate answers with data from `app.store.data` and
+     * `app.cache.data` (`app.store.data` is persisted to the file
+     * system, and `app.cache.data` is in-memory)
+     */
+
+    questions.setData(app.store.data);
+    questions.setData(app.cache.data);
 
     // listen for `ask` event and attempt to set the default
     // value using stored data, before the question is asked
     questions.on('ask', function(key, question, answers) {
-      var answer = utils.get(app.cache.data, key);
+      updateOpts();
 
+      var init = options.init || options.force;
+      if (init) {
+        if (typeof init !== 'boolean' && isMatch(key, init)) {
+          question.options.force = true;
+        }
+        if (init === true) {
+          question.options.force = true;
+        }
+        return;
+      }
+
+      var answer = utils.get(app.cache.data, key);
       if (answer) {
         question.answer.set(answer);
         return;
       }
 
-      if (!question.isAnswered(opts.locale) && store.has(key)) {
+      if (!question.isAnswered(options.locale) && store.has(key)) {
         question.answer.setDefault(store.get(key));
       }
     });
@@ -64,6 +95,7 @@ module.exports = function(options) {
     for (var key in opts.questions) {
       questions.visit(key, opts.questions[key]);
     }
+    delete opts.questions;
 
     // decorate the `questions` instance onto `app`
     app.define('questions', questions);
@@ -153,3 +185,11 @@ module.exports = function(options) {
     app.define('ask', questions.ask.bind(questions));
   };
 };
+
+function isMatch(key, pattern) {
+  if (key === pattern) return true;
+  if (Array.isArray(pattern)) {
+    return utils.mm.any(key, pattern);
+  }
+  return utils.mm.isMatch(key, pattern);
+}

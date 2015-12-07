@@ -1,18 +1,24 @@
 'use strict';
 
+process.env.NODE_ENV = 'test';
+
 require('mocha');
+var fs = require('fs');
 var assert = require('assert');
-var questions = require('./');
-var Base = require('base-methods');
+var App = require('base-methods');
 var store = require('base-store');
+var option = require('base-options');
+var config = require('base-config');
+var data = require('base-data');
+var questions = require('./');
 var app, base;
 
 describe('base-questions', function() {
   beforeEach(function() {
-    base = new Base();
+    base = new App();
     base.use(store('base-questions-tests/base'));
 
-    app = new Base();
+    app = new App();
     app.use(store('base-questions-tests/app'));
     app.use(questions(base));
   });
@@ -50,11 +56,19 @@ describe('base-questions', function() {
       cb();
     });
   });
+
+  it.skip('should force all questions to be asked', function(cb) {
+    app.questions.option('init', 'author');
+    app.ask({force: true}, function(err, answers) {
+      console.log(answers)
+      cb();
+    });
+  });
 });
 
 describe('errors', function(cb) {
   beforeEach(function() {
-    app = new Base();
+    app = new App();
   });
 
   it('should throw an error when the store plugin is not registered', function(cb) {
@@ -66,5 +80,106 @@ describe('errors', function(cb) {
       assert.equal(err.message, 'base-questions requires the "base-store" plugin to be registered first');
       cb();
     }
+  });
+});
+
+describe('app.ask', function() {
+  beforeEach(function() {
+    app = new App();
+    app.use(data());
+    app.use(config());
+    app.use(option());
+    app.use(store('base-questions-tests/ask'))
+    app.use(questions());
+  });
+
+  it('should store a question:', function() {
+    app.question('a', 'b');
+    assert(app.questions);
+    assert(app.questions.cache);
+    assert(app.questions.cache.a);
+    assert(app.questions.cache.a.name === 'a');
+    assert(app.questions.cache.a.options.message === 'b');
+  });
+
+  it.skip('should re-init a specific question:', function(cb) {
+    this.timeout(20000);
+    app.question('a', 'b');
+    app.data({a: 'b'});
+
+    app.option('questions.init', 'a');
+
+    app.ask(function(err, answers) {
+      console.log(answers);
+      cb();
+    });
+  });
+
+  it('should ask a question and use a `cache.data` value to answer:', function(cb) {
+    app.question('a', 'b');
+    app.data('a', 'b');
+
+    app.ask('a', function(err, answers) {
+      assert(!err);
+      assert(answers.a === 'b');
+
+      app.data('a', 'zzz');
+      app.ask('a', function(err, answers) {
+        assert(!err);
+        assert(answers.a === 'zzz');
+        cb();
+      })
+    });
+  });
+
+  it('should ask a question and use a `store.data` value to answer:', function(cb) {
+    app.question('a', 'b');
+    app.store.set('a', 'c');
+
+    app.ask('a', function(err, answers) {
+      assert(!err);
+      assert(answers);
+      assert(answers.a === 'c');
+      cb();
+    })
+  });
+
+  it('should ask a question and use a config value to answer:', function(cb) {
+    app.question('a', 'b');
+    app.config.process({data: {a: 'foo'}});
+    app.store.set('a', 'c');
+
+    app.ask('a', function(err, answer) {
+      assert(!err);
+      assert(answer);
+      assert(answer.a === 'foo');
+      cb();
+    })
+  });
+
+  it('should prefer `cache.data` to `store.data`', function(cb) {
+    app.question('a', 'b');
+    app.data('a', 'b');
+    app.store.set('a', 'c');
+
+    app.ask('a', function(err, answer) {
+      assert(!err);
+      assert(answer);
+      assert(answer.a === 'b');
+      cb();
+    })
+  });
+
+  it('should prefer data loaded by config to `cache.data`', function(cb) {
+    app.question('a', 'b');
+    app.data('a', 'b');
+    app.config.process({data: {a: 'foo'}});
+
+    app.ask('a', function(err, answer) {
+      assert(!err);
+      assert(answer);
+      assert(answer.a === 'foo');
+      cb();
+    })
   });
 });
