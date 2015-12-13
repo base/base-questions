@@ -70,6 +70,16 @@
         "question-store",
         "answer-store"
       ]
-    }
+    },
+    "layout": "default",
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "reflinks": [
+      "common-questions",
+      "question-cache",
+      "question-store",
+      "answer-store"
+    ]
   }
 }
