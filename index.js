@@ -25,15 +25,10 @@ module.exports = function(options) {
       options = utils.extend({}, appOpts, baseOpts, options);
     }
 
+    updateOpts();
     var Questions = utils.questions;
     var questions = new Questions(options);
     var opts = questions.options;
-
-    // app.on('option', function(key, val) {
-    //   if (/questions\./.test(key)) {
-    //     utils.set(opts, key, val);
-    //   }
-    // });
 
     // force all questions to be asked when requested by the user
     if (opts.init === true || opts.force === true) {
@@ -65,7 +60,13 @@ module.exports = function(options) {
         return;
       }
 
-      var answer = utils.get(app.cache.data, key);
+      var answer = utils.get(app.cache, ['expanded', key]);
+      if (answer) {
+        question.answer.set(answer);
+        return;
+      }
+
+      answer = utils.get(app.cache.data, key);
       if (answer) {
         question.answer.set(answer);
         return;
@@ -81,7 +82,7 @@ module.exports = function(options) {
     // stores the answer, but `app.store` is used for more
     // than questions, so we only set if it doesn't already exist.
     questions.on('answer', function(key, val, question) {
-      if (question.options.isDefault && !store.has(key)) {
+      if (question.options.isDefault) {
         store.set(key, val);
       }
     });
@@ -185,6 +186,10 @@ module.exports = function(options) {
     app.define('ask', questions.ask.bind(questions));
   };
 };
+
+/**
+ * Utility for matching question names
+ */
 
 function isMatch(key, pattern) {
   if (key === pattern) return true;
