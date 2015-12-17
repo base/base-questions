@@ -12,8 +12,8 @@ require = utils;
  * Lazily required module dependencies
  */
 
-require('extend-shallow', 'extend');
 require('question-store', 'questions');
+require('mixin-deep', 'merge');
 require('common-questions');
 require('micromatch', 'mm');
 require('set-value', 'set');

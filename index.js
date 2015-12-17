@@ -19,10 +19,13 @@ module.exports = function(options) {
       throw new TypeError(msg);
     }
 
+    if (app.hasQuestions) return;
+    app.define('hasQuestions', true);
+
     function updateOpts() {
       var baseOpts = (base.options && base.options.questions) || {};
       var appOpts = (app.options && app.options.questions) || {};
-      options = utils.extend({}, appOpts, baseOpts, options);
+      options = utils.merge({}, appOpts, baseOpts, options);
     }
 
     updateOpts();
@@ -41,13 +44,13 @@ module.exports = function(options) {
      * system, and `app.cache.data` is in-memory)
      */
 
-    questions.setData(app.store.data);
-    questions.setData(app.cache.data);
-
     // listen for `ask` event and attempt to set the default
     // value using stored data, before the question is asked
     questions.on('ask', function(key, question, answers) {
       updateOpts();
+
+      var ctx = utils.merge({}, app.store.data, app.cache.data);
+      questions.setData(ctx);
 
       var init = options.init || options.force;
       if (init) {
@@ -66,14 +69,18 @@ module.exports = function(options) {
         return;
       }
 
-      answer = utils.get(app.cache.data, key);
+      answer = utils.get(ctx, key);
       if (answer) {
         question.answer.set(answer);
         return;
       }
 
-      if (!question.isAnswered(options.locale) && store.has(key)) {
-        question.answer.setDefault(store.get(key));
+      if (!question.isAnswered(options.locale)) {
+        if (store.has(key)) {
+          question.answer.setDefault(store.get(key));
+          return;
+        }
+        questions.options.force = true;
       }
     });
 
@@ -81,22 +88,11 @@ module.exports = function(options) {
     // a value is not already defined. question-store already
     // stores the answer, but `app.store` is used for more
     // than questions, so we only set if it doesn't already exist.
-    questions.on('answer', function(key, val, question) {
+    questions.on('answer', function(key, answer, question) {
       if (question.options.isDefault) {
-        store.set(key, val);
+        store.set(key, answer);
       }
     });
-
-    /**
-     * Load questions to ask. Answers are
-     * passed to templates as context.
-     */
-
-    opts.questions = utils.commonQuestions(opts.questions);
-    for (var key in opts.questions) {
-      questions.visit(key, opts.questions[key]);
-    }
-    delete opts.questions;
 
     // decorate the `questions` instance onto `app`
     app.define('questions', questions);
@@ -161,6 +157,16 @@ module.exports = function(options) {
      */
 
     app.define('question', questions.set.bind(questions));
+
+    /**
+     * Load questions to ask. Answers are passed to templates as context.
+     */
+
+    opts.questions = utils.commonQuestions(opts.questions);
+    for (var key in opts.questions) {
+      app.questions.visit(key, opts.questions[key]);
+    }
+    delete opts.questions;
 
     /**
      * Ask one or more questions, with the given `options` and callback.
