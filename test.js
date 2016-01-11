@@ -5,7 +5,7 @@ process.env.NODE_ENV = 'test';
 require('mocha');
 var fs = require('fs');
 var assert = require('assert');
-var App = require('base-methods');
+var App = require('base');
 var store = require('base-store');
 var option = require('base-options');
 var config = require('base-config');
@@ -63,23 +63,6 @@ describe('base-questions', function() {
       console.log(answers)
       cb();
     });
-  });
-});
-
-describe('errors', function(cb) {
-  beforeEach(function() {
-    app = new App();
-  });
-
-  it('should throw an error when the store plugin is not registered', function(cb) {
-    try {
-      app.use(questions());
-      cb(new Error('expected an error'));
-    } catch (err) {
-      assert(err);
-      assert.equal(err.message, 'base-questions requires the "base-store" plugin to be registered first');
-      cb();
-    }
   });
 });
 
