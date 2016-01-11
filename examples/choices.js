@@ -5,12 +5,13 @@ var assemble = require('assemble-core');
 var store = require('base-store');
 var argv = require('base-argv');
 
-var app = assemble();
-app.use(store());
-app.use(argv());
+var app = assemble()
+  .use(store())
+  .use(argv());
 
-var argv = app.argv(process.argv.slice(2));
-app.use(questions(app, argv.options));
+
+var argv = app.processArgv(process.argv.slice(2));
+app.use(questions(argv.options));
 
 app.task('ask', function (cb) {
   app.ask(function (err, answers) {

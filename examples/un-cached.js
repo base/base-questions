@@ -17,13 +17,7 @@ app.env = {
 app.use(store());
 app.use(questions(argv));
 
-app.questions
-  .set('a', 'What is A?')
-  .set('b', 'What is B?')
-  .set('c', 'What is C?');
-
-app.ask(function (err, answers) {
+app.ask('Would you like to answer this question?', function(err, answers) {
   if (err) return console.log(err);
   console.log(answers);
 });
-
