@@ -21,6 +21,7 @@ module.exports = function(options) {
    }
 
    updateOpts();
+   utils.forceExit();
    var Questions = utils.questions;
    var questions = new Questions(options);
    var opts = questions.options;
@@ -29,6 +30,7 @@ module.exports = function(options) {
    if (opts.init === true || opts.force === true) {
      opts.forceAll = true;
    }
+
 
    /**
     * Pre-populate answers with data from `app.store.data` and

@@ -85,12 +85,14 @@ describe('app.ask', function() {
     assert(app.questions.cache.a.options.message === 'b');
   });
 
-  it.skip('should re-init a specific question:', function(cb) {
+  it('should re-init a specific question:', function(cb) {
     this.timeout(20000);
     app.question('a', 'b');
+    app.question('c', 'd');
+    app.question('e', 'f');
     app.data({a: 'b'});
 
-    app.option('questions.init', 'a');
+    app.option('questions.init', 'e');
 
     app.ask(function(err, answers) {
       console.log(answers);

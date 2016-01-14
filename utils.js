@@ -23,6 +23,23 @@ require('for-own');
 require = fn;
 
 /**
+ * Force exit if "ctrl+c" is pressed
+ */
+
+utils.forceExit = function() {
+  var stdin = process.stdin;
+  stdin.setRawMode(true);
+  stdin.resume();
+  stdin.setEncoding('utf8');
+  stdin.on('data', function(key) {
+    if (key === '\u0003') {
+      process.stdout.write('\u001b[1A');
+      process.exit();
+    }
+  });
+};
+
+/**
  * Expose `utils` modules
  */
 
