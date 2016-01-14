@@ -77,7 +77,7 @@ app.build('choices', function(err) {
 
 ## API
 
-### [.choices](index.js#L104)
+### [.choices](index.js#L105)
 
 Create a "choices" question from an array.
 
@@ -102,7 +102,7 @@ app.ask('foo', function(err, answer) {
 });
 ```
 
-### [.question](index.js#L141)
+### [.question](index.js#L142)
 
 Add a question to be asked at a later point.
 
@@ -129,7 +129,7 @@ app.question({
 });
 ```
 
-### [.ask](index.js#L174)
+### [.ask](index.js#L175)
 
 Ask one or more questions, with the given `options` and callback.
 
