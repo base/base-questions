@@ -12,14 +12,15 @@ require = utils;
  * Lazily required module dependencies
  */
 
-require('question-store', 'questions');
-require('mixin-deep', 'merge');
 require('common-questions');
-require('micromatch', 'mm');
-require('set-value', 'set');
-require('get-value', 'get');
-require('to-choices');
 require('for-own');
+require('get-value', 'get');
+require('is-valid-glob');
+require('micromatch', 'mm');
+require('mixin-deep', 'merge');
+require('question-store', 'questions');
+require('set-value', 'set');
+require('to-choices');
 require = fn;
 
 /**
@@ -31,6 +32,7 @@ utils.forceExit = function() {
   stdin.setRawMode(true);
   stdin.resume();
   stdin.setEncoding('utf8');
+  stdin.setMaxListeners(0);
   stdin.on('data', function(key) {
     if (key === '\u0003') {
       process.stdout.write('\u001b[1A');
