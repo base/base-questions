@@ -10,8 +10,6 @@
 var utils = require('./utils');
 
 module.exports = function(options) {
-  utils.forceExit();
-
   return function(app) {
     if (this.isRegistered('base-questions')) return;
 
