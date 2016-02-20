@@ -17,27 +17,23 @@ module.exports = function(options) {
     var setQuestions = false;
 
     /**
-     * Load questions to ask. Answers are passed to templates as context.
+     * Lazily add the `ask` listener.
      */
 
-    function lazyQuestions(app) {
+    function lazyListener(app) {
       if (setQuestions) return;
       setQuestions = true;
-      opts.questions = utils.commonQuestions(opts.questions);
-      for (var key in opts.questions) {
-        app.questions.visit(key, opts.questions[key]);
-      }
-      delete opts.questions;
+
 
       app.questions.on('ask', function(key, question, answers) {
         if (isForced(key, opts)) {
           question.force();
           return;
         }
-
-        var answer = app.data(key) || app.store.get(key);
+        var store = app.store.local || app.store;
+        var answer = app.data(key) || store.get(key);
         if (typeof answer !== 'undefined') {
-          question.answer.set(answer);
+          question.setAnswer(answer);
         }
       });
     }
@@ -52,7 +48,7 @@ module.exports = function(options) {
         var Questions = utils.questions;
         var questions = new Questions(opts);
         this.define('_questions', questions);
-        lazyQuestions(this);
+        lazyListener(this);
         return questions;
       }
     });
@@ -80,7 +76,7 @@ module.exports = function(options) {
      */
 
     this.define('choices', function() {
-      lazyQuestions(this);
+      lazyListener(this);
       var args = [].slice.call(arguments);
       var cb = args.pop();
       var question = utils.toChoices.apply(null, args);
@@ -120,7 +116,7 @@ module.exports = function(options) {
      */
 
     this.define('question', function() {
-      lazyQuestions(this);
+      lazyListener(this);
       return this.questions.set.apply(this.questions, arguments);
     });
 
@@ -145,8 +141,20 @@ module.exports = function(options) {
      * @api public
      */
 
-    this.define('ask', function(queue, opts, cb) {
-      lazyQuestions(this);
+    this.mixin('ask', function(queue, opts, cb) {
+      lazyListener(this);
+
+      if (typeof queue === 'function') {
+        cb = queue;
+        opts = {};
+        queue = this.questions.queue;
+      }
+
+      if (typeof opts === 'function') {
+        cb = opts;
+        opts = {};
+      }
+
       if (typeof queue === 'string' && !this.questions.has(queue)) {
         this.questions.set(queue, {force: true}, queue);
       }

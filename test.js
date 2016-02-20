@@ -60,19 +60,6 @@ describe('base-questions', function() {
       app.use(questions());
     });
 
-    afterEach(function() {
-
-    });
-
-    it.skip('should ask common questions', function(cb) {
-      this.timeout(20000);
-
-      app.ask({force: true}, function(err, answers) {
-        console.log(answers)
-        cb();
-      });
-    });
-
     it.skip('should force all questions to be asked', function(cb) {
       app.questions.option('init', 'author');
       app.ask({force: true}, function(err, answers) {
