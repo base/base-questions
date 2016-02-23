@@ -11,7 +11,7 @@ var option = require('base-options');
 var config = require('base-config');
 var data = require('base-data');
 var questions = require('./');
-var app, base;
+var app, base, site;
 
 describe('base-questions', function() {
   describe('plugin', function() {
@@ -98,6 +98,16 @@ describe('base-questions', function() {
       });
     });
 
+    it('should ask a question defined on `ask`', function(cb) {
+      app.data('name', 'Brian Woodward');
+
+      app.ask('name', function(err, answers) {
+        if(err) return cb(err)
+        assert.equal(answers.name, 'Brian Woodward');
+        cb();
+      });
+    });
+
     it('should ask a question and use a `cache.data` value to answer:', function(cb) {
       app.question('a', 'this is a question');
       app.data('a', 'b');
@@ -116,9 +126,8 @@ describe('base-questions', function() {
     });
 
     it('should ask a question and use a `store.data` value to answer:', function(cb) {
-      app.question('a', 'b');
+      app.question('a', 'this is another question');
       app.store.set('a', 'c');
-
       app.ask('a', function(err, answers) {
         assert(!err);
         assert(answers);
@@ -157,8 +166,9 @@ describe('base-questions', function() {
     });
 
     it('should update data with data loaded by config', function(cb) {
-      app.question('a', 'b');
+      app.question('a', 'this is a question');
       app.data('a', 'b');
+
       app.config.process({data: {a: 'foo'}}, function(err) {
         if (err) return cb(err);
 
@@ -167,6 +177,118 @@ describe('base-questions', function() {
 
           assert(answer);
           assert.equal(answer.a, 'foo');
+          cb();
+        });
+      });
+    });
+  });
+
+  describe('session data', function() {
+    before(function() {
+      site = new App();
+      site.use(store('base-questions-tests/site'));
+      site.use(data());
+      site.use(config());
+      site.use(option());
+      site.use(questions());
+
+      app = new App();
+      app.use(store('base-questions-tests/ask'));
+      app.use(data());
+      app.use(config());
+      app.use(option());
+      app.use(questions());
+    });
+
+    after(function() {
+      site.store.del({force: true});
+      site.questions.clearCache();
+
+      app.store.del({force: true});
+      app.questions.clearCache();
+    });
+
+    it('[app] should ask a question and use a `cache.data` value to answer:', function(cb) {
+      app.question('package.name', 'this is a question');
+      app.data('package.name', 'base-questions');
+
+      app.ask('package.name', function(err, answers) {
+        if(err) return cb(err)
+        assert.equal(answers.package.name, 'base-questions');
+
+        app.data('package.name', 'question-store');
+        app.ask('package.name', function(err, answers) {
+          if(err) return cb(err)
+          assert.equal(answers.package.name, 'question-store');
+          cb();
+        })
+      });
+    });
+
+    it('[site] should ask a question and use a `cache.data` value to answer:', function(cb) {
+      site.question('package.name', 'this is a question');
+      site.data('package.name', 'base-questions');
+
+      site.ask('package.name', function(err, answers) {
+        if(err) return cb(err)
+        assert.equal(answers.package.name, 'base-questions');
+
+        site.data('package.name', 'question-store');
+        site.ask('package.name', function(err, answers) {
+          if(err) return cb(err)
+          assert.equal(answers.package.name, 'question-store');
+          cb();
+        })
+      });
+    });
+
+    it('[app] should ask a question and use a `store.data` value to answer:', function(cb) {
+      app.question('author.name', 'this is another question');
+      app.store.set('author.name', 'Brian Woodward');
+      app.ask('author.name', function(err, answers) {
+        if (err) return cb(err);
+        assert(answers);
+        assert.equal(answers.author.name, 'Brian Woodward');
+        cb();
+      })
+    });
+
+    it('[site] should ask a question and use a `store.data` value to answer:', function(cb) {
+      site.question('author.name', 'this is another question');
+      site.store.set('author.name', 'Jon Schlinkert');
+      site.ask('author.name', function(err, answers) {
+        if (err) return cb(err);
+        assert(answers);
+        assert.equal(answers.author.name, 'Brian Woodward');
+        cb();
+      })
+    });
+
+    it('[app] should ask a question and use a config value to answer:', function(cb) {
+      app.question('foo', 'Username?');
+      app.config.process({data: {foo: 'jonschlinkert'}}, function(err) {
+        if (err) return cb(err);
+
+        app.store.set('foo', 'doowb');
+
+        app.ask('foo', function(err, answer) {
+          assert(!err);
+          assert(answer);
+          assert.equal(answer.foo, 'jonschlinkert');
+          cb();
+        });
+      });
+    });
+
+    it('[site] should ask a question and use a config value to answer:', function(cb) {
+      site.question('foo', 'Username?');
+      site.config.process({data: {foo: 'doowb'}}, function(err) {
+        if (err) return cb(err);
+
+        site.ask('foo', function(err, answer) {
+          if (err) return cb(err);
+          assert(answer);
+          assert.equal(answer.foo, 'doowb');
           cb();
         });
       });

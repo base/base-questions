@@ -7,7 +7,6 @@
 
 'use strict';
 
-var debug = require('debug')
 var utils = require('./utils');
 
 module.exports = function(options) {
@@ -15,9 +14,10 @@ module.exports = function(options) {
     if (this.isRegistered('base-questions')) return;
 
     var opts = utils.merge({}, this.options, options);
-    opts.store = this.store;
-    opts.data = this.cache.data;
-    opts.project = this.project;
+    var self = this;
+    opts.store = self.store;
+    opts.data = self.cache.data;
+    opts.project = self.project;
 
     /**
      * Decorate the `questions` instance onto `app` and lazily
@@ -25,7 +25,7 @@ module.exports = function(options) {
      * method is called.
      */
 
-    utils.sync(this, 'questions', function fn() {
+    utils.sync(self, 'questions', function fn() {
       // return cached instance
       if (fn._questions) {
         return fn._questions;
@@ -35,11 +35,11 @@ module.exports = function(options) {
       var questions = new Questions(opts);
 
       utils.sync(questions, 'data', function() {
-        return app.cache.data;
+        return self.cache.data;
       });
 
       utils.sync(questions, 'store', function() {
-        return app.store;
+        return self.store;
       });
 
       fn._questions = questions;
@@ -134,37 +134,9 @@ module.exports = function(options) {
 
     this.define('ask', function(queue, opts, cb) {
       if (typeof queue === 'string' && !this.questions.has(queue)) {
-        this.questions.set(queue, {force: true}, queue);
+        this.questions.set(queue, opts, queue);
       }
       this.questions.ask(queue, opts, cb);
     });
   };
 };
-
-/**
- * Utility for matching question names
- */
-
-function isMatch(key, pattern) {
-  if (key === pattern) return true;
-  if (Array.isArray(pattern)) {
-    return utils.mm.any(key, pattern);
-  }
-  return utils.mm.isMatch(key, pattern);
-}
-
-function isForced(key, options) {
-  var opts = utils.merge({}, options);
-  if (utils.isValidGlob(opts.force)) {
-    return isMatch(key, opts.force);
-  }
-  if (utils.isValidGlob(opts.init)) {
-    return isMatch(key, opts.init);
-  }
-  if (opts.init === true) {
-    return true;
-  }
-  if (opts.force === true) {
-    return true;
-  }
-}
