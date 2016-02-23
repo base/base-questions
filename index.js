@@ -15,9 +15,6 @@ module.exports = function(options) {
 
     var opts = utils.merge({}, this.options, options);
     var self = this;
-    opts.store = self.store;
-    opts.data = self.cache.data;
-    opts.project = self.project;
 
     /**
      * Decorate the `questions` instance onto `app` and lazily
@@ -30,6 +27,10 @@ module.exports = function(options) {
       if (fn._questions) {
         return fn._questions;
       }
+
+      opts.store = self.store;
+      opts.data = self.cache.data;
+      opts.project = self.project;
 
       var Questions = utils.Questions;
       var questions = new Questions(opts);
