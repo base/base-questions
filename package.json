@@ -21,6 +21,8 @@
     "test": "mocha"
   },
   "dependencies": {
+    "debug": "^2.2.0",
+    "define-property": "^0.2.5",
     "is-valid-glob": "^0.3.0",
     "lazy-cache": "^1.0.3",
     "micromatch": "^2.3.7",

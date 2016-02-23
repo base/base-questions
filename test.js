@@ -53,11 +53,16 @@ describe('base-questions', function() {
   describe('app.ask', function() {
     beforeEach(function() {
       app = new App();
+      app.use(store('base-questions-tests/ask'));
       app.use(data());
       app.use(config());
       app.use(option());
-      app.use(store('base-questions-tests/ask'))
       app.use(questions());
+    });
+
+    afterEach(function() {
+      app.store.del({force: true});
+      app.questions.clearCache();
     });
 
     it.skip('should force all questions to be asked', function(cb) {
@@ -94,7 +99,7 @@ describe('base-questions', function() {
     });
 
     it('should ask a question and use a `cache.data` value to answer:', function(cb) {
-      app.question('a', 'b');
+      app.question('a', 'this is a question');
       app.data('a', 'b');
 
       app.ask('a', function(err, answers) {
@@ -124,15 +129,18 @@ describe('base-questions', function() {
 
     it('should ask a question and use a config value to answer:', function(cb) {
       app.question('a', 'b');
-      app.config.process({data: {a: 'foo'}});
-      app.store.set('a', 'c');
+      app.config.process({data: {a: 'foo'}}, function(err) {
+        if (err) return cb(err);
 
-      app.ask('a', function(err, answer) {
-        assert(!err);
-        assert(answer);
-        assert.equal(answer.a, 'foo');
-        cb();
-      })
+        app.store.set('a', 'c');
+
+        app.ask('a', function(err, answer) {
+          assert(!err);
+          assert(answer);
+          assert.equal(answer.a, 'foo');
+          cb();
+        });
+      });
     });
 
     it('should prefer `cache.data` to `store.data`', function(cb) {
@@ -148,17 +156,20 @@ describe('base-questions', function() {
       })
     });
 
-    it('should prefer data loaded by config to `cache.data`', function(cb) {
+    it('should update data with data loaded by config', function(cb) {
       app.question('a', 'b');
       app.data('a', 'b');
-      app.config.process({data: {a: 'foo'}});
+      app.config.process({data: {a: 'foo'}}, function(err) {
+        if (err) return cb(err);
 
-      app.ask('a', function(err, answer) {
-        assert(!err);
-        assert(answer);
-        assert.equal(answer.a, 'foo');
-        cb();
-      })
+        app.ask('a', function(err, answer) {
+          if (err) return cb(err);
+
+          assert(answer);
+          assert.equal(answer.a, 'foo');
+          cb();
+        });
+      });
     });
   });
 });

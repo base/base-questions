@@ -7,6 +7,7 @@
 
 'use strict';
 
+var debug = require('debug')
 var utils = require('./utils');
 
 module.exports = function(options) {
@@ -14,43 +15,35 @@ module.exports = function(options) {
     if (this.isRegistered('base-questions')) return;
 
     var opts = utils.merge({}, this.options, options);
-    var setQuestions = false;
+    opts.store = this.store;
+    opts.data = this.cache.data;
+    opts.project = this.project;
 
     /**
-     * Lazily add the `ask` listener.
+     * Decorate the `questions` instance onto `app` and lazily
+     * invoke the `question-store` lib when a questions related
+     * method is called.
      */
 
-    function lazyListener(app) {
-      if (setQuestions) return;
-      setQuestions = true;
-
-
-      app.questions.on('ask', function(key, question, answers) {
-        if (isForced(key, opts)) {
-          question.force();
-          return;
-        }
-        var store = app.store.local || app.store;
-        var answer = app.data(key) || store.get(key);
-        if (typeof answer !== 'undefined') {
-          question.setAnswer(answer);
-        }
-      });
-    }
-
-    // decorate the `questions` instance onto `app`
-    this.define('questions', {
-      set: function(val) {
-        this.define('questions', val);
-      },
-      get: function fn() {
-        if (this._questions) return this._questions;
-        var Questions = utils.questions;
-        var questions = new Questions(opts);
-        this.define('_questions', questions);
-        lazyListener(this);
-        return questions;
+    utils.sync(this, 'questions', function fn() {
+      // return cached instance
+      if (fn._questions) {
+        return fn._questions;
       }
+
+      var Questions = utils.Questions;
+      var questions = new Questions(opts);
+
+      utils.sync(questions, 'data', function() {
+        return app.cache.data;
+      });
+
+      utils.sync(questions, 'store', function() {
+        return app.store;
+      });
+
+      fn._questions = questions;
+      return questions;
     });
 
     /**
@@ -76,7 +69,6 @@ module.exports = function(options) {
      */
 
     this.define('choices', function() {
-      lazyListener(this);
       var args = [].slice.call(arguments);
       var cb = args.pop();
       var question = utils.toChoices.apply(null, args);
@@ -116,7 +108,6 @@ module.exports = function(options) {
      */
 
     this.define('question', function() {
-      lazyListener(this);
       return this.questions.set.apply(this.questions, arguments);
     });
 
@@ -141,20 +132,7 @@ module.exports = function(options) {
      * @api public
      */
 
-    this.mixin('ask', function(queue, opts, cb) {
-      lazyListener(this);
-
-      if (typeof queue === 'function') {
-        cb = queue;
-        opts = {};
-        queue = this.questions.queue;
-      }
-
-      if (typeof opts === 'function') {
-        cb = opts;
-        opts = {};
-      }
-
+    this.define('ask', function(queue, opts, cb) {
       if (typeof queue === 'string' && !this.questions.has(queue)) {
         this.questions.set(queue, {force: true}, queue);
       }
