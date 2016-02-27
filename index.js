@@ -9,11 +9,13 @@
 
 var utils = require('./utils');
 
-module.exports = function(options) {
+module.exports = function(config) {
   return function(app) {
     if (this.isRegistered('base-questions')) return;
 
-    var opts = utils.merge({}, this.options, options);
+    var opts = utils.merge({project: this.project}, this.options, config);
+    opts.store = this.store;
+    opts.data = this.cache.data;
     var self = this;
 
     /**
@@ -22,18 +24,19 @@ module.exports = function(options) {
      * method is called.
      */
 
-    utils.sync(self, 'questions', function fn() {
+    utils.sync(this, 'questions', function fn() {
       // return cached instance
-      if (fn._questions) {
-        return fn._questions;
-      }
-
-      opts.store = self.store;
-      opts.data = self.cache.data;
-      opts.project = self.project;
+      if (fn._questions) return fn._questions;
 
       var Questions = utils.Questions;
       var questions = new Questions(opts);
+      fn._questions = questions;
+
+      questions.on('error', function(err) {
+        err.reason = 'base-questions error';
+        self.emit('error', err);
+        self.emit('*', 'error', err);
+      });
 
       utils.sync(questions, 'data', function() {
         return self.cache.data;
@@ -43,7 +46,6 @@ module.exports = function(options) {
         return self.store;
       });
 
-      fn._questions = questions;
       return questions;
     });
 
@@ -51,15 +53,12 @@ module.exports = function(options) {
      * Create a "choices" question from an array.
      *
      * ```js
-     * app.choices('foo', ['a', 'b', 'c']);
+     * app.choices('Favorite color?', ['blue', 'orange', 'green']);
+     *
      * // or
      * app.choices('foo', {
-     *   message: 'Favorite letter?',
-     *   choices: ['a', 'b', 'c']
-     * });
-     * // then
-     * app.ask('foo', function(err, answer) {
-     *   console.log(answer);
+     *   message: 'Favorite color?',
+     *   choices: ['blue', 'orange', 'green']
      * });
      * ```
      * @name .choices
@@ -70,18 +69,7 @@ module.exports = function(options) {
      */
 
     this.define('choices', function() {
-      var args = [].slice.call(arguments);
-      var cb = args.pop();
-      var question = utils.toChoices.apply(null, args);
-
-      // don't save answers for choice questions
-      // unless explicitly defined by the user
-      if (!question.hasOwnProperty('save')) {
-        question.save = false;
-      }
-
-      this.questions.set(question.name, question);
-      return this.ask(question.name, cb);
+      return this.questions.choices.apply(this.questions, arguments);
     });
 
     /**
@@ -89,11 +77,13 @@ module.exports = function(options) {
      *
      * ```js
      * app.question('beverage', 'What is your favorite beverage?');
+     *
      * // or
      * app.question('beverage', {
      *   type: 'input',
      *   message: 'What is your favorite beverage?'
      * });
+     *
      * // or
      * app.question({
      *   name: 'beverage'

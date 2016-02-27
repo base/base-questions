@@ -8,19 +8,15 @@ var argv = require('minimist')(process.argv.slice(2), {
 })
 
 var app = assemble();
-app.env = {
-  user: {
-    pkg: require('../package')
-  }
-};
-
 app.use(store());
 app.use(questions(argv));
+app.data({d: 'e'});
 
 app.questions
   .set('a', 'What is A?')
   .set('b', 'What is B?')
-  .set('c', 'What is C?');
+  .set('c', 'What is C?')
+  .set('d', 'What is D?');
 
 app.ask(function (err, answers) {
   if (err) return console.log(err);

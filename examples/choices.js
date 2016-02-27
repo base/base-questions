@@ -10,7 +10,7 @@ var app = assemble()
   .use(argv());
 
 
-var argv = app.processArgv(process.argv.slice(2));
+var argv = app.argv(process.argv.slice(2));
 app.use(questions(argv.options));
 
 app.task('ask', function (cb) {
@@ -37,10 +37,13 @@ app.task('c', function (cb) {
 });
 
 app.task('choices', function (cb) {
-  app.choices('run', ['a', 'b', 'c'], function (err, answers) {
+  app.choices('run', tasks(app), function(err, answers) {
     if (err) return cb(err);
-    if (!answers.run.length) return cb();
-    app.build(answers.run, cb);
+    if (answers.run.length) {
+      app.build(answers.run, cb);
+    } else {
+      cb();
+    }
   });
 });
 
@@ -48,3 +51,17 @@ app.build('choices', function(err) {
   if (err) return console.log(err);
   console.log('done!');
 });
+
+function tasks(app) {
+  var keys = [];
+  for (var key in app.tasks) {
+    if (key === 'choices' || key === 'ask') {
+      continue;
+    }
+
+    if (app.tasks.hasOwnProperty(key)) {
+      keys.push(key);
+    }
+  }
+  return keys;
+}

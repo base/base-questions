@@ -53,7 +53,7 @@ describe('base-questions', function() {
   describe('app.ask', function() {
     beforeEach(function() {
       app = new App();
-      app.use(store('base-questions-tests/ask'));
+      app.use(store('base-questions-tests/app.ask'));
       app.use(data());
       app.use(config());
       app.use(option());
@@ -62,7 +62,7 @@ describe('base-questions', function() {
 
     afterEach(function() {
       app.store.del({force: true});
-      app.questions.clearCache();
+      app.questions.clear();
     });
 
     it.skip('should force all questions to be asked', function(cb) {
@@ -79,7 +79,7 @@ describe('base-questions', function() {
       assert(app.questions.cache);
       assert(app.questions.cache.a);
       assert.equal(app.questions.cache.a.name, 'a');
-      assert.equal(app.questions.cache.a.options.message, 'b');
+      assert.equal(app.questions.cache.a.message, 'b');
     });
 
     it.skip('should re-init a specific question:', function(cb) {
@@ -128,8 +128,9 @@ describe('base-questions', function() {
     it('should ask a question and use a `store.data` value to answer:', function(cb) {
       app.question('a', 'this is another question');
       app.store.set('a', 'c');
+
       app.ask('a', function(err, answers) {
-        assert(!err);
+        if (err) return cb(err);
         assert(answers);
         assert.equal(answers.a, 'c');
         cb();
@@ -193,7 +194,7 @@ describe('base-questions', function() {
       site.use(questions());
 
       app = new App();
-      app.use(store('base-questions-tests/ask'));
+      app.use(store('base-questions-tests/app'));
       app.use(data());
       app.use(config());
       app.use(option());
@@ -202,10 +203,10 @@ describe('base-questions', function() {
 
     after(function() {
       site.store.del({force: true});
-      site.questions.clearCache();
+      site.questions.clear();
 
       app.store.del({force: true});
-      app.questions.clearCache();
+      app.questions.clear();
     });
 
     it('[app] should ask a question and use a `cache.data` value to answer:', function(cb) {
@@ -243,7 +244,7 @@ describe('base-questions', function() {
     });
 
     it('[app] should ask a question and use a `store.data` value to answer:', function(cb) {
-      app.question('author.name', 'this is another question');
+      app.question('author.name', 'author name?');
       app.store.set('author.name', 'Brian Woodward');
       app.ask('author.name', function(err, answers) {
         if (err) return cb(err);
@@ -254,8 +255,9 @@ describe('base-questions', function() {
     });
 
     it('[site] should ask a question and use a `store.data` value to answer:', function(cb) {
-      site.question('author.name', 'this is another question');
+      site.question('author.name', 'author name?');
       site.store.set('author.name', 'Jon Schlinkert');
+
       site.ask('author.name', function(err, answers) {
         if (err) return cb(err);
         assert(answers);
@@ -266,11 +268,10 @@ describe('base-questions', function() {
 
     it('[app] should ask a question and use a config value to answer:', function(cb) {
       app.question('foo', 'Username?');
+
       app.config.process({data: {foo: 'jonschlinkert'}}, function(err) {
         if (err) return cb(err);
-
         app.store.set('foo', 'doowb');
-
         app.ask('foo', function(err, answer) {
           assert(!err);
           assert(answer);
@@ -282,9 +283,9 @@ describe('base-questions', function() {
 
     it('[site] should ask a question and use a config value to answer:', function(cb) {
       site.question('foo', 'Username?');
+
       site.config.process({data: {foo: 'doowb'}}, function(err) {
         if (err) return cb(err);
-
         site.ask('foo', function(err, answer) {
           if (err) return cb(err);
           assert(answer);
