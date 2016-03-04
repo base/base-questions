@@ -15,6 +15,7 @@ module.exports = function(config) {
 
     var opts = utils.merge({project: this.project}, this.options, config);
     opts.store = this.store;
+    opts.globals = this.globals;
     opts.data = this.cache.data;
     var self = this;
 
@@ -44,6 +45,10 @@ module.exports = function(config) {
 
       utils.sync(questions, 'store', function() {
         return self.store;
+      });
+
+      utils.sync(questions, 'globals', function() {
+        return self.globals;
       });
 
       return questions;
