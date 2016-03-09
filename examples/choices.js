@@ -37,7 +37,9 @@ app.task('c', function (cb) {
 });
 
 app.task('choices', function (cb) {
-  app.choices('run', tasks(app), function(err, answers) {
+  app.choices('run', tasks(app));
+
+  app.ask('run', function(err, answers) {
     if (err) return cb(err);
     if (answers.run.length) {
       app.build(answers.run, cb);
