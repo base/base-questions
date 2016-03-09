@@ -12,12 +12,9 @@ require = utils;
  * Lazily required module dependencies
  */
 
-require('is-valid-glob');
-require('micromatch', 'mm');
-require('mixin-deep', 'merge');
 require('define-property', 'define');
+require('mixin-deep', 'merge');
 require('question-store', 'Questions');
-require('to-choices');
 require = fn;
 
 utils.sync = function(obj, prop, val) {
