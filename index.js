@@ -33,6 +33,8 @@ module.exports = function(config) {
       var questions = new Questions(opts);
       fn._questions = questions;
 
+      questions.on('ask', app.emit.bind(app, 'ask'));
+      questions.on('answer', app.emit.bind(app, 'answer'));
       questions.on('error', function(err) {
         err.reason = 'base-questions error';
         self.emit('error', err);
@@ -74,7 +76,8 @@ module.exports = function(config) {
      */
 
     this.define('choices', function() {
-      return this.questions.choices.apply(this.questions, arguments);
+      this.questions.choices.apply(this.questions, arguments);
+      return this;
     });
 
     /**
