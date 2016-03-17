@@ -11,7 +11,7 @@ var utils = require('./utils');
 
 module.exports = function(config) {
   return function(app) {
-    if (this.isRegistered('base-questions')) return;
+    if (!isValidInstance(app)) return;
 
     var opts = utils.merge({project: this.project}, this.options, config);
     opts.store = this.store;
@@ -139,3 +139,17 @@ module.exports = function(config) {
     });
   };
 };
+
+function isValidInstance(app) {
+  var fn = app.options.validatePlugin;
+  if (typeof fn === 'function' && !fn(app)) {
+    return false;
+  }
+  if (app.isRegistered('base-questions')) {
+    return false;
+  }
+  if (app.isCollection || app.isView) {
+    return false;
+  }
+  return true;
+}
