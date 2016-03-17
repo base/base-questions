@@ -10,7 +10,7 @@
 var utils = require('./utils');
 
 module.exports = function(config) {
-  return function(app) {
+  return function plugin(app) {
     if (!isValidInstance(app)) return;
 
     var opts = utils.merge({project: this.project}, this.options, config);
@@ -137,6 +137,8 @@ module.exports = function(config) {
       }
       this.questions.ask(queue, opts, cb);
     });
+
+    return plugin;
   };
 };
 
