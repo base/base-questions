@@ -2,11 +2,11 @@
   "name": "base-questions",
   "description": "Plugin for base-methods that adds methods for prompting the user and storing the answers on a project-by-project basis.",
   "version": "0.5.2",
-  "homepage": "https://github.com/jonschlinkert/base-questions",
+  "homepage": "https://github.com/node-base/base-questions",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
-  "repository": "jonschlinkert/base-questions",
+  "repository": "node-base/base-questions",
   "bugs": {
-    "url": "https://github.com/jonschlinkert/base-questions/issues"
+    "url": "https://github.com/node-base/base-questions/issues"
   },
   "license": "MIT",
   "files": [
