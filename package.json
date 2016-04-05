@@ -1,7 +1,7 @@
 {
   "name": "base-questions",
   "description": "Plugin for base-methods that adds methods for prompting the user and storing the answers on a project-by-project basis.",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "homepage": "https://github.com/node-base/base-questions",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "node-base/base-questions",
