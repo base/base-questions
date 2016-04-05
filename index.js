@@ -17,6 +17,7 @@ module.exports = function(config) {
     opts.store = this.store;
     opts.globals = this.globals;
     opts.data = this.cache.data;
+    opts.cwd = this.cwd;
     var self = this;
 
     /**
