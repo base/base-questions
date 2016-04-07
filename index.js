@@ -58,18 +58,55 @@ module.exports = function(config) {
     });
 
     /**
+     * Create a `confirm` question.
+     *
+     * ```js
+     * app.confirm('file', 'Want to generate a file?');
+     *
+     * // equivalent to
+     * app.question({
+     *   name: 'file',
+     *   message: 'Want to generate a file?',
+     *   type: 'confirm'
+     * });
+     * ```
+     * @name .confirm
+     * @param {String} `name` Question name
+     * @param {String} `msg` Question message
+     * @param {String|Array} `queue` Name or array of question names.
+     * @param {Object|Function} `options` Question options or callback function
+     * @param {Function} `callback` callback function
+     * @api public
+     */
+
+    this.define('confirm', function() {
+      this.questions.confirm.apply(this.questions, arguments);
+      return this;
+    });
+
+    /**
      * Create a "choices" question from an array.
      *
      * ```js
-     * app.choices('Favorite color?', ['blue', 'orange', 'green']);
+     * app.choices('color', 'Favorite color?', ['blue', 'orange', 'green']);
      *
      * // or
-     * app.choices('foo', {
+     * app.choices('color', {
+     *   message: 'Favorite color?',
+     *   choices: ['blue', 'orange', 'green']
+     * });
+     *
+     * // or
+     * app.choices({
+     *   name: 'color',
      *   message: 'Favorite color?',
      *   choices: ['blue', 'orange', 'green']
      * });
      * ```
      * @name .choices
+     * @param {String} `name` Question name
+     * @param {String} `msg` Question message
+     * @param {Array} `choices` Choice items
      * @param {String|Array} `queue` Name or array of question names.
      * @param {Object|Function} `options` Question options or callback function
      * @param {Function} `callback` callback function
@@ -82,7 +119,7 @@ module.exports = function(config) {
     });
 
     /**
-     * Add a question to be asked at a later point.
+     * Add a question to be asked by the `.ask` method.
      *
      * ```js
      * app.question('beverage', 'What is your favorite beverage?');
@@ -101,6 +138,8 @@ module.exports = function(config) {
      * });
      * ```
      * @name .question
+     * @param {String} `name` Question name
+     * @param {String} `msg` Question message
      * @param {Object|String} `value` Question object, message (string), or options object.
      * @param {String} `locale` Optionally pass the locale to use, otherwise the default locale is used.
      * @return {Object} Returns the `this.questions` object, for chaining
