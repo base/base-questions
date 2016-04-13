@@ -18,16 +18,21 @@ require('question-store', 'Questions');
 require = fn;
 
 utils.sync = function(obj, prop, val) {
+  var cached;
   utils.define(obj, prop, {
     configurable: true,
     enumerable: true,
     set: function(v) {
-      utils.define(obj, prop, v);
+      cached = v;
     },
     get: function() {
-      if (typeof val === 'function') {
-        return val.call(obj);
+      if (typeof cached !== 'undefined') {
+        return cached;
       }
+      if (typeof val === 'function') {
+        val = val.call(obj);
+      }
+      cached = val;
       return val;
     }
   });

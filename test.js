@@ -7,8 +7,8 @@ var fs = require('fs');
 var assert = require('assert');
 var App = require('base');
 var store = require('base-store');
-var option = require('base-options');
-var config = require('base-config');
+var option = require('base-option');
+var config = require('base-config-process');
 var data = require('base-data');
 var questions = require('./');
 var app, base, site;
@@ -53,10 +53,11 @@ describe('base-questions', function() {
   describe('app.ask', function() {
     beforeEach(function() {
       app = new App();
-      app.use(store('base-questions-tests/app.ask'));
+      app.isApp = true;
       app.use(data());
-      app.use(config());
+      app.use(store('base-questions-tests/app.ask'));
       app.use(option());
+      app.use(config());
       app.use(questions());
     });
 
@@ -68,7 +69,7 @@ describe('base-questions', function() {
     it.skip('should force all questions to be asked', function(cb) {
       app.questions.option('init', 'author');
       app.ask({force: true}, function(err, answers) {
-        console.log(answers)
+        console.log(answers);
         cb();
       });
     });
@@ -90,7 +91,7 @@ describe('base-questions', function() {
       app.data({a: 'b'});
 
       app.questions.get('e')
-        .force()
+        .force();
 
       app.ask(function(err, answers) {
         console.log(answers);
@@ -102,7 +103,7 @@ describe('base-questions', function() {
       app.data('name', 'Brian Woodward');
 
       app.ask('name', function(err, answers) {
-        if(err) return cb(err)
+        if(err) return cb(err);
         assert.equal(answers.name, 'Brian Woodward');
         cb();
       });
@@ -113,15 +114,15 @@ describe('base-questions', function() {
       app.data('a', 'b');
 
       app.ask('a', function(err, answers) {
-        if(err) return cb(err)
+        if(err) return cb(err);
         assert.equal(answers.a, 'b');
 
         app.data('a', 'zzz');
         app.ask('a', function(err, answers) {
-          if(err) return cb(err)
+          if(err) return cb(err);
           assert.equal(answers.a, 'zzz');
           cb();
-        })
+        });
       });
     });
 
@@ -134,7 +135,7 @@ describe('base-questions', function() {
         assert(answers);
         assert.equal(answers.a, 'c');
         cb();
-      })
+      });
     });
 
     it('should ask a question and use a config value to answer:', function(cb) {
@@ -145,7 +146,7 @@ describe('base-questions', function() {
         app.store.set('a', 'c');
 
         app.ask('a', function(err, answer) {
-          assert(!err);
+          if (err) return cb(err);
           assert(answer);
           assert.equal(answer.a, 'foo');
           cb();
@@ -163,7 +164,7 @@ describe('base-questions', function() {
         assert(answer);
         assert.equal(answer.a, 'b');
         cb();
-      })
+      });
     });
 
     it('should update data with data loaded by config', function(cb) {
@@ -187,6 +188,7 @@ describe('base-questions', function() {
   describe('session data', function() {
     before(function() {
       site = new App();
+      site.isApp = true;
       site.use(store('base-questions-tests/site'));
       site.use(data());
       site.use(config());
@@ -194,6 +196,7 @@ describe('base-questions', function() {
       site.use(questions());
 
       app = new App();
+      app.isApp = true;
       app.use(store('base-questions-tests/app'));
       app.use(data());
       app.use(config());
@@ -214,15 +217,15 @@ describe('base-questions', function() {
       app.data('package.name', 'base-questions');
 
       app.ask('package.name', function(err, answers) {
-        if(err) return cb(err)
+        if(err) return cb(err);
         assert.equal(answers.package.name, 'base-questions');
 
         app.data('package.name', 'question-store');
         app.ask('package.name', function(err, answers) {
-          if(err) return cb(err)
+          if(err) return cb(err);
           assert.equal(answers.package.name, 'question-store');
           cb();
-        })
+        });
       });
     });
 
@@ -231,15 +234,15 @@ describe('base-questions', function() {
       site.data('package.name', 'base-questions');
 
       site.ask('package.name', function(err, answers) {
-        if(err) return cb(err)
+        if(err) return cb(err);
         assert.equal(answers.package.name, 'base-questions');
 
         site.data('package.name', 'question-store');
         site.ask('package.name', function(err, answers) {
-          if(err) return cb(err)
+          if(err) return cb(err);
           assert.equal(answers.package.name, 'question-store');
           cb();
-        })
+        });
       });
     });
 
@@ -251,7 +254,7 @@ describe('base-questions', function() {
         assert(answers);
         assert.equal(answers.author.name, 'Brian Woodward');
         cb();
-      })
+      });
     });
 
     it('[site] should ask a question and use a `store.data` value to answer:', function(cb) {
@@ -263,7 +266,7 @@ describe('base-questions', function() {
         assert(answers);
         assert.equal(answers.author.name, 'Brian Woodward');
         cb();
-      })
+      });
     });
 
     it('[app] should ask a question and use a config value to answer:', function(cb) {

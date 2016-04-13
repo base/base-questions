@@ -14,10 +14,6 @@ module.exports = function(config) {
     if (!isValidInstance(app)) return;
 
     var opts = utils.merge({project: this.project}, this.options, config);
-    opts.store = this.store;
-    opts.globals = this.globals;
-    opts.data = this.cache.data || {};
-    opts.cwd = this.cwd || process.cwd();
     var self = this;
 
     /**
@@ -29,6 +25,10 @@ module.exports = function(config) {
     utils.sync(this, 'questions', function fn() {
       // return cached instance
       if (fn._questions) return fn._questions;
+      opts.store = self.store;
+      opts.globals = self.globals;
+      opts.data = self.cache.data || {};
+      opts.cwd = self.cwd || process.cwd();
 
       var Questions = utils.Questions;
       var questions = new Questions(opts);
@@ -46,10 +46,13 @@ module.exports = function(config) {
         self.emit('*', 'error', err);
       });
 
-      utils.sync(questions, 'data', function() {
-        var obj = utils.merge({}, data, self.cache.data);
-        utils.merge(data, obj);
-        return data;
+      Object.defineProperty(questions, 'data', {
+        set: function(val) {
+          data = val;
+        },
+        get: function() {
+          return utils.merge({}, data, opts.data);
+        }
       });
 
       utils.sync(questions, 'store', function() {
