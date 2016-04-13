@@ -16,8 +16,8 @@ module.exports = function(config) {
     var opts = utils.merge({project: this.project}, this.options, config);
     opts.store = this.store;
     opts.globals = this.globals;
-    opts.data = this.cache.data;
-    opts.cwd = this.cwd;
+    opts.data = this.cache.data || {};
+    opts.cwd = this.cwd || process.cwd();
     var self = this;
 
     /**
@@ -34,6 +34,10 @@ module.exports = function(config) {
       var questions = new Questions(opts);
       fn._questions = questions;
 
+      var globals = questions.globals;
+      var store = questions.store;
+      var data = questions.data;
+
       questions.on('ask', app.emit.bind(app, 'ask'));
       questions.on('answer', app.emit.bind(app, 'answer'));
       questions.on('error', function(err) {
@@ -43,15 +47,17 @@ module.exports = function(config) {
       });
 
       utils.sync(questions, 'data', function() {
-        return self.cache.data;
+        var obj = utils.merge({}, data, self.cache.data);
+        utils.merge(data, obj);
+        return data;
       });
 
       utils.sync(questions, 'store', function() {
-        return self.store;
+        return self.store || store;
       });
 
       utils.sync(questions, 'globals', function() {
-        return self.globals;
+        return self.globals || globals;
       });
 
       return questions;
@@ -81,7 +87,7 @@ module.exports = function(config) {
 
     this.define('confirm', function() {
       this.questions.confirm.apply(this.questions, arguments);
-      return this;
+      return this.questions;
     });
 
     /**
@@ -115,7 +121,7 @@ module.exports = function(config) {
 
     this.define('choices', function() {
       this.questions.choices.apply(this.questions, arguments);
-      return this;
+      return this.questions;
     });
 
     /**
@@ -173,9 +179,9 @@ module.exports = function(config) {
 
     this.define('ask', function(queue, opts, cb) {
       if (typeof queue === 'string' && !this.questions.has(queue)) {
-        this.questions.set(queue, opts, queue);
+        this.questions.set.call(this.questions, queue, opts, queue);
       }
-      this.questions.ask(queue, opts, cb);
+      this.questions.ask.call(this.questions, queue, opts, cb);
     });
 
     return plugin;
