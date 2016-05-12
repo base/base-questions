@@ -13,6 +13,7 @@ require = utils;
  */
 
 require('define-property', 'define');
+require('isobject', 'isObject');
 require('mixin-deep', 'merge');
 require('question-store', 'Questions');
 require = fn;

@@ -180,11 +180,20 @@ module.exports = function(config) {
      * @api public
      */
 
-    this.define('ask', function(queue, opts, cb) {
-      if (typeof queue === 'string' && !this.questions.has(queue)) {
-        this.questions.set.call(this.questions, queue, opts, queue);
+    this.define('ask', function(queue, options, cb) {
+      if (typeof queue === 'function') {
+        return this.ask(this.questions.queue, {}, queue);
       }
-      this.questions.ask.call(this.questions, queue, opts, cb);
+      if (options === 'function') {
+        return this.ask(queue, {}, options);
+      }
+      if (utils.isObject(queue)) {
+        return this.ask(this.questions.queue, queue, options);
+      }
+      if (typeof queue === 'string' && !this.questions.has(queue)) {
+        this.questions.set.call(this.questions, queue, options, queue);
+      }
+      this.questions.ask.call(this.questions, queue, options, cb);
     });
 
     return plugin;
