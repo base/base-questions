@@ -205,7 +205,7 @@ function isValidInstance(app) {
   if (typeof fn === 'function' && !fn(app)) {
     return false;
   }
-  if (app.isRegistered('base-questions')) {
+  if (typeof app.isRegistered !== 'function' || app.isRegistered('base-questions')) {
     return false;
   }
   if (app.isCollection || app.isView) {
