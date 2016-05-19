@@ -17,9 +17,11 @@ describe('base-questions', function() {
   describe('plugin', function() {
     beforeEach(function() {
       base = new App();
+      base.isApp = true;
       base.use(store('base-questions-tests/base'));
 
       app = new App();
+      app.isApp = true;
       app.use(store('base-questions-tests/app'));
       app.use(questions(base));
     });

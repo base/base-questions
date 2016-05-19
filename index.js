@@ -7,12 +7,11 @@
 
 'use strict';
 
-var isRegistered = require('is-registered');
 var utils = require('./utils');
 
 module.exports = function(config, fn) {
   return function plugin(app) {
-    if (!isValidInstance(app, fn)) return;
+    if (!isValid(app, fn)) return;
 
     var opts = utils.merge({project: this.project}, this.options, config);
     var self = this;
@@ -201,12 +200,12 @@ module.exports = function(config, fn) {
   };
 };
 
-function isValidInstance(app, fn) {
-  if (typeof fn === 'function') {
-    return fn(app, 'base-cwd');
-  }
-  if (app && typeof app === 'object' && (app.isCollection || app.isView)) {
+function isValid(app, fn) {
+  if (!utils.isValidInstance(app)) {
     return false;
   }
-  return !isRegistered(app, 'base-cwd');
+  if (utils.isRegistered(app, 'base-questions')) {
+    return false;
+  }
+  return true;
 }
