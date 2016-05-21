@@ -7,14 +7,12 @@
 
 'use strict';
 
+var path = require('path');
 var utils = require('./utils');
 
 module.exports = function(config, fn) {
   return function plugin(app) {
     if (!isValid(app, fn)) return;
-
-    var opts = utils.merge({project: this.project}, this.options, config);
-    var self = this;
 
     /**
      * Decorate the `questions` instance onto `app` and lazily
@@ -23,12 +21,19 @@ module.exports = function(config, fn) {
      */
 
     utils.sync(this, 'questions', function fn() {
+      if (typeof app.store === 'undefined') {
+        throw new Error('expected the base-store plugin to be registered');
+      }
+
+      var opts = utils.merge({}, app.options, config);
+
       // return cached instance
       if (fn._questions) return fn._questions;
-      opts.store = self.store;
-      opts.globals = self.globals;
-      opts.data = self.cache.data || {};
-      opts.cwd = self.cwd || process.cwd();
+
+      opts.store = app.store;
+      opts.globals = app.globals;
+      opts.data = app.cache.data || {};
+      opts.cwd = app.cwd || process.cwd();
 
       var Questions = utils.Questions;
       var questions = new Questions(opts);
@@ -42,8 +47,8 @@ module.exports = function(config, fn) {
       questions.on('answer', app.emit.bind(app, 'answer'));
       questions.on('error', function(err) {
         err.reason = 'base-questions error';
-        self.emit('error', err);
-        self.emit('*', 'error', err);
+        app.emit('error', err);
+        app.emit('*', 'error', err);
       });
 
       Object.defineProperty(questions, 'data', {
@@ -51,16 +56,18 @@ module.exports = function(config, fn) {
           data = val;
         },
         get: function() {
-          return utils.merge({}, data, opts.data);
+          var res = utils.merge({}, data, opts.data);
+          questions.hints.set(res);
+          return res;
         }
       });
 
       utils.sync(questions, 'store', function() {
-        return self.store || store;
+        return app.store || store;
       });
 
       utils.sync(questions, 'globals', function() {
-        return self.globals || globals;
+        return app.globals || globals;
       });
 
       return questions;
