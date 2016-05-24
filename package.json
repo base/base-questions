@@ -21,6 +21,7 @@
     "test": "mocha"
   },
   "dependencies": {
+    "base-store": "^0.4.4",
     "define-property": "^0.2.5",
     "is-registered": "^0.1.3",
     "is-valid-instance": "^0.1.0",
@@ -36,7 +37,6 @@
     "base-config-process": "^0.1.1",
     "base-data": "^0.4.0",
     "base-option": "^0.7.0",
-    "base-store": "^0.4.2",
     "gulp": "^3.9.1",
     "gulp-eslint": "^2.0.0",
     "gulp-format-md": "^0.1.7",

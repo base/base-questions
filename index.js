@@ -7,12 +7,11 @@
 
 'use strict';
 
-var path = require('path');
 var utils = require('./utils');
 
 module.exports = function(config, fn) {
   return function plugin(app) {
-    if (!isValid(app, fn)) return;
+    if (!utils.isValid(app)) return;
 
     /**
      * Decorate the `questions` instance onto `app` and lazily
@@ -22,7 +21,7 @@ module.exports = function(config, fn) {
 
     utils.sync(this, 'questions', function fn() {
       if (typeof app.store === 'undefined') {
-        throw new Error('expected the base-store plugin to be registered');
+        this.use(utils.store());
       }
 
       var opts = utils.merge({}, app.options, config);
@@ -206,13 +205,3 @@ module.exports = function(config, fn) {
     return plugin;
   };
 };
-
-function isValid(app, fn) {
-  if (!utils.isValidInstance(app)) {
-    return false;
-  }
-  if (utils.isRegistered(app, 'base-questions')) {
-    return false;
-  }
-  return true;
-}
