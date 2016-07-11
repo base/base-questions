@@ -11,7 +11,7 @@ var utils = require('./utils');
 
 module.exports = function(config, fn) {
   return function plugin(app) {
-    if (!utils.isValid(app)) return;
+    if (!utils.isValid(app, 'base-questions')) return;
 
     /**
      * Decorate the `questions` instance onto `app` and lazily
@@ -47,7 +47,6 @@ module.exports = function(config, fn) {
       questions.on('error', function(err) {
         err.reason = 'base-questions error';
         app.emit('error', err);
-        app.emit('*', 'error', err);
       });
 
       Object.defineProperty(questions, 'data', {
@@ -55,9 +54,8 @@ module.exports = function(config, fn) {
           data = val;
         },
         get: function() {
-          var res = utils.merge({}, data, opts.data);
-          questions.hints.set(res);
-          return res;
+          questions.hints.set(utils.merge(data, opts.data));
+          return data;
         }
       });
 

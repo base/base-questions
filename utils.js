@@ -14,22 +14,11 @@ require = utils;
 
 require('base-store', 'store');
 require('define-property', 'define');
-require('is-registered');
-require('is-valid-instance');
+require('is-valid-app', 'isValid');
 require('isobject', 'isObject');
 require('mixin-deep', 'merge');
 require('question-store', 'Questions');
 require = fn;
-
-utils.isValid = function(app) {
-  if (!utils.isValidInstance(app)) {
-    return false;
-  }
-  if (utils.isRegistered(app, 'base-questions')) {
-    return false;
-  }
-  return true;
-};
 
 utils.sync = function(obj, prop, val) {
   var cached;
