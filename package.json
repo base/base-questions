@@ -11,6 +11,8 @@
   "license": "MIT",
   "files": [
     "index.js",
+    "LICENSE",
+    "README.md",
     "utils.js"
   ],
   "main": "index.js",
@@ -45,20 +47,31 @@
     "mocha": "^2.4.5"
   },
   "keywords": [
+    "api",
+    "app",
+    "application",
     "ask",
     "base",
     "baseplugin",
+    "building-blocks",
     "choice",
     "choices",
     "cli",
     "command",
     "command-line",
     "console",
+    "create",
+    "framework",
     "line",
     "plugin",
+    "plugins",
     "prompt",
     "question",
-    "terminal"
+    "questions",
+    "terminal",
+    "tool",
+    "toolkit",
+    "tools"
   ],
   "verb": {
     "run": true,
