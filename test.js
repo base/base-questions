@@ -3,7 +3,6 @@
 process.env.NODE_ENV = 'test';
 
 require('mocha');
-var fs = require('fs');
 var assert = require('assert');
 var App = require('base');
 var store = require('base-store');
@@ -16,10 +15,8 @@ var questions = require('./');
 var app, base, site;
 
 function interception(re) {
-  var intercepted = false;
   return intercept(function(str) {
     if (re.test(str)) {
-      intercepted = true;
       return '';
     } else {
       return str.trim();
@@ -30,14 +27,12 @@ function interception(re) {
 describe('base-questions', function() {
   describe('plugin', function() {
     beforeEach(function() {
-      base = new App();
-      base.isApp = true;
+      base = new App({isApp: true});
       base.use(store('base-questions-tests/base'));
 
-      app = new App();
-      app.isApp = true;
+      app = new App({isApp: true});
       app.use(store('base-questions-tests/app'));
-      app.use(questions(base));
+      app.use(questions());
     });
 
     it('should export a function', function() {
@@ -68,19 +63,18 @@ describe('base-questions', function() {
 
   describe('app.ask', function() {
     beforeEach(function() {
-      app = new App();
-      app.isApp = true;
+      app = new App({isApp: true});
       app.use(data());
-      app.use(store('base-questions-tests/app.ask'));
-      app.store.del(Object.keys(app.store.data));
       app.use(option());
       app.use(config());
       app.use(questions());
+      app.use(store('base-questions-tests/app.ask'));
     });
 
     afterEach(function() {
       app.store.del({force: true});
       app.questions.clear();
+      app.cache.data = {};
     });
 
     it('should force all questions to be asked', function(cb) {
@@ -116,7 +110,7 @@ describe('base-questions', function() {
         bddStdin('foo', '\n');
       });
 
-      app.disable('force')
+      app.disable('force');
       app.question('a', 'b');
       app.question('c', 'd');
       app.question('e', 'f');
@@ -137,7 +131,7 @@ describe('base-questions', function() {
       app.data('name', 'Brian Woodward');
 
       app.ask('name', function(err, answers) {
-        if(err) return cb(err);
+        if (err) return cb(err);
         assert.equal(answers.name, 'Brian Woodward');
         cb();
       });
@@ -148,12 +142,12 @@ describe('base-questions', function() {
       app.data('a', 'b');
 
       app.ask('a', function(err, answers) {
-        if(err) return cb(err);
+        if (err) return cb(err);
         assert.equal(answers.a, 'b');
 
         app.data('a', 'zzz');
         app.ask('a', function(err, answers) {
-          if(err) return cb(err);
+          if (err) return cb(err);
           assert.equal(answers.a, 'zzz');
           cb();
         });
@@ -251,12 +245,12 @@ describe('base-questions', function() {
       app.data('package.name', 'base-questions');
 
       app.ask('package.name', function(err, answers) {
-        if(err) return cb(err);
+        if (err) return cb(err);
         assert.equal(answers.package.name, 'base-questions');
 
         app.data('package.name', 'question-store');
         app.ask('package.name', function(err, answers) {
-          if(err) return cb(err);
+          if (err) return cb(err);
           assert.equal(answers.package.name, 'question-store');
           cb();
         });
@@ -268,12 +262,12 @@ describe('base-questions', function() {
       site.data('package.name', 'base-questions');
 
       site.ask('package.name', function(err, answers) {
-        if(err) return cb(err);
+        if (err) return cb(err);
         assert.equal(answers.package.name, 'base-questions');
 
         site.data('package.name', 'question-store');
         site.ask('package.name', function(err, answers) {
-          if(err) return cb(err);
+          if (err) return cb(err);
           assert.equal(answers.package.name, 'question-store');
           cb();
         });
