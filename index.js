@@ -54,8 +54,8 @@ module.exports = function(config, fn) {
           data = val;
         },
         get: function() {
-          questions.hints.set(utils.merge(data, opts.data));
-          return data;
+          data = utils.merge({}, data, opts.data);
+          return utils.clone(data);
         }
       });
 

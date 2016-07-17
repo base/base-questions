@@ -13,6 +13,7 @@ require = utils;
  */
 
 require('base-store', 'store');
+require('clone-deep', 'clone');
 require('define-property', 'define');
 require('is-valid-app', 'isValid');
 require('isobject', 'isObject');

@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "base-store": "^0.4.4",
+    "clone-deep": "^0.2.4",
     "define-property": "^0.2.5",
     "is-valid-app": "^0.2.0",
     "isobject": "^2.1.0",
@@ -32,19 +33,21 @@
     "question-store": "^0.10.0"
   },
   "devDependencies": {
-    "assemble-core": "^0.16.1",
-    "base": "^0.8.1",
-    "base-argv": "^0.4.2",
-    "base-config-process": "^0.1.1",
-    "base-data": "^0.4.0",
-    "base-option": "^0.7.0",
+    "assemble-core": "^0.25.0",
+    "base": "^0.11.1",
+    "base-argv": "^0.5.0",
+    "base-config-process": "^0.1.9",
+    "base-data": "^0.6.0",
+    "base-option": "^0.8.4",
+    "bdd-stdin": "^0.2.0",
     "gulp": "^3.9.1",
-    "gulp-eslint": "^2.0.0",
-    "gulp-format-md": "^0.1.7",
-    "gulp-istanbul": "^0.10.4",
+    "gulp-eslint": "^3.0.1",
+    "gulp-format-md": "^0.1.9",
+    "gulp-istanbul": "^1.0.0",
     "gulp-mocha": "^2.2.0",
+    "intercept-stdout": "^0.1.2",
     "minimist": "^1.2.0",
-    "mocha": "^2.4.5"
+    "mocha": "^2.5.3"
   },
   "keywords": [
     "api",
