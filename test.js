@@ -9,9 +9,23 @@ var App = require('base');
 var store = require('base-store');
 var option = require('base-option');
 var config = require('base-config-process');
+var intercept = require('intercept-stdout');
+var bddStdin = require('bdd-stdin');
 var data = require('base-data');
 var questions = require('./');
 var app, base, site;
+
+function interception(re) {
+  var intercepted = false;
+  return intercept(function(str) {
+    if (re.test(str)) {
+      intercepted = true;
+      return '';
+    } else {
+      return str.trim();
+    }
+  });
+}
 
 describe('base-questions', function() {
   describe('plugin', function() {
@@ -58,6 +72,7 @@ describe('base-questions', function() {
       app.isApp = true;
       app.use(data());
       app.use(store('base-questions-tests/app.ask'));
+      app.store.del(Object.keys(app.store.data));
       app.use(option());
       app.use(config());
       app.use(questions());
@@ -68,10 +83,20 @@ describe('base-questions', function() {
       app.questions.clear();
     });
 
-    it.skip('should force all questions to be asked', function(cb) {
-      app.questions.option('init', 'author');
+    it('should force all questions to be asked', function(cb) {
+      var unhook = interception(/Name|Description/);
+
+      app.question('name', {message: 'Name?'});
+      app.question('desc', {message: 'Description?'});
+
+      bddStdin('Brian Woodward', '\n', 'Foo', '\n');
       app.ask({force: true}, function(err, answers) {
-        console.log(answers);
+        if (err) {
+          cb(err);
+          return;
+        }
+        assert.deepEqual(answers, {name: 'Brian Woodward', desc: 'Foo'});
+        unhook();
         cb();
       });
     });
@@ -85,18 +110,25 @@ describe('base-questions', function() {
       assert.equal(app.questions.cache.a.message, 'b');
     });
 
-    it.skip('should re-init a specific question:', function(cb) {
-      this.timeout(20000);
+    it('should force a specific question:', function(cb) {
+      var unhook = interception(/foo/);
+      app.on('ask', function() {
+        bddStdin('foo', '\n');
+      });
+
+      app.disable('force')
       app.question('a', 'b');
       app.question('c', 'd');
       app.question('e', 'f');
-      app.data({a: 'b'});
+      app.data({a: 'b', c: 'd', e: 'f'});
 
-      app.questions.get('e')
-        .force();
+      var question = app.questions.get('e');
+      question.options.force = true;
 
       app.ask(function(err, answers) {
-        console.log(answers);
+        if (err) return cb(err);
+        assert.deepEqual(answers, {a: 'b', c: 'd', e: 'foo'});
+        unhook();
         cb();
       });
     });
