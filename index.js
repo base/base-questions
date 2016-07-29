@@ -7,11 +7,13 @@
 
 'use strict';
 
+var debug = require('debug')('base-questions');
 var utils = require('./utils');
 
 module.exports = function(config, fn) {
   return function plugin(app) {
     if (!utils.isValid(app, 'base-questions')) return;
+    debug('initializing from <%s>', __filename);
 
     /**
      * Decorate the `questions` instance onto `app` and lazily
