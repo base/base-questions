@@ -79,11 +79,18 @@ describe('base-questions', function() {
 
     it('should force all questions to be asked', function(cb) {
       var unhook = interception(/Name|Description/);
+      var answers = {
+        name: 'Brian Woodward',
+        desc: 'Foo'
+      };
+
+      app.on('ask', function(val, key) {
+        bddStdin(answers[key], '\n');
+      });
 
       app.question('name', {message: 'Name?'});
       app.question('desc', {message: 'Description?'});
 
-      bddStdin('Brian Woodward', '\n', 'Foo', '\n');
       app.ask({force: true}, function(err, answers) {
         if (err) {
           cb(err);
@@ -235,9 +242,11 @@ describe('base-questions', function() {
     after(function() {
       site.store.del({force: true});
       site.questions.clear();
+      app.cache.data = {};
 
       app.store.del({force: true});
       app.questions.clear();
+      app.cache.data = {};
     });
 
     it('[app] should ask a question and use a `cache.data` value to answer:', function(cb) {
@@ -277,6 +286,8 @@ describe('base-questions', function() {
     it('[app] should ask a question and use a `store.data` value to answer:', function(cb) {
       app.question('author.name', 'author name?');
       app.store.set('author.name', 'Brian Woodward');
+      app.disable('common-config');
+
       app.ask('author.name', function(err, answers) {
         if (err) return cb(err);
         assert(answers);
@@ -292,7 +303,7 @@ describe('base-questions', function() {
       site.ask('author.name', function(err, answers) {
         if (err) return cb(err);
         assert(answers);
-        assert.equal(answers.author.name, 'Brian Woodward');
+        assert.equal(answers.author.name, 'Jon Schlinkert');
         cb();
       });
     });

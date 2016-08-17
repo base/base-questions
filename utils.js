@@ -12,13 +12,14 @@ require = utils;
  * Lazily required module dependencies
  */
 
-require('base-store', 'store');
 require('clone-deep', 'clone');
 require('define-property', 'define');
+require('get-value', 'get');
 require('is-valid-app', 'isValid');
 require('isobject', 'isObject');
 require('mixin-deep', 'merge');
 require('question-store', 'Questions');
+require('set-value', 'set');
 require = fn;
 
 utils.sync = function(obj, prop, val) {

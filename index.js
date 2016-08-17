@@ -15,6 +15,16 @@ module.exports = function(config, fn) {
     if (!utils.isValid(app, 'base-questions')) return;
     debug('initializing from <%s>', __filename);
 
+    this.define('Questions', this.options.questions || utils.Questions);
+
+    this.on('ask', function(val, key, question, answers) {
+      var data = utils.merge({}, answers, app.store.data, app.cache.answers, app.cache.data);
+      if (app.option('common-config') !== false) {
+        data = utils.merge({}, app.questions.common.data, data);
+      }
+      utils.set(answers, key, utils.get(data, key));
+    });
+
     /**
      * Decorate the `questions` instance onto `app` and lazily
      * invoke the `question-store` lib when a questions related
@@ -26,24 +36,18 @@ module.exports = function(config, fn) {
         this.use(utils.store());
       }
 
-      var opts = utils.merge({}, app.options, config);
-
       // return cached instance
       if (fn._questions) return fn._questions;
 
-      opts.store = app.store;
-      opts.globals = app.globals;
+      var opts = utils.merge({}, app.options, config);
       opts.data = app.cache.data || {};
       opts.cwd = app.cwd || process.cwd();
 
-      var Questions = utils.Questions;
+      var Questions = app.Questions;
       var questions = new Questions(opts);
       fn._questions = questions;
 
-      var globals = questions.globals;
-      var store = questions.store;
       var data = questions.data;
-
       questions.on('ask', app.emit.bind(app, 'ask'));
       questions.on('answer', app.emit.bind(app, 'answer'));
       questions.on('error', function(err) {
@@ -59,14 +63,6 @@ module.exports = function(config, fn) {
           data = utils.merge({}, data, opts.data);
           return utils.clone(data);
         }
-      });
-
-      utils.sync(questions, 'store', function() {
-        return app.store || store;
-      });
-
-      utils.sync(questions, 'globals', function() {
-        return app.globals || globals;
       });
 
       return questions;
@@ -186,20 +182,38 @@ module.exports = function(config, fn) {
      * @api public
      */
 
-    this.define('ask', function(queue, options, cb) {
-      if (typeof queue === 'function') {
-        return this.ask(this.questions.queue, {}, queue);
+    this.define('ask', function(names, options, cb) {
+      if (typeof names === 'function') {
+        cb = names;
+        options = {};
+        names = this.questions.queue;
       }
-      if (options === 'function') {
-        return this.ask(queue, {}, options);
+
+      if (typeof options === 'function') {
+        cb = options;
+        options = {};
       }
-      if (utils.isObject(queue)) {
-        return this.ask(this.questions.queue, queue, options);
+
+      // create a question from `name` if it doesn't already exist
+      if (typeof names === 'string' && !this.questions.has(names)) {
+        var msg = (names.charAt(0).toUpperCase() + names.slice(1)).replace(/\?$/, '') + '?';
+        this.questions.set.call(this.questions, names, options, msg);
       }
-      if (typeof queue === 'string' && !this.questions.has(queue)) {
-        this.questions.set.call(this.questions, queue, options, queue);
+
+      if (utils.isObject(names) && (!names.type && !names.name)) {
+        options = names;
+        names = this.questions.queue;
       }
-      this.questions.ask.call(this.questions, queue, options, cb);
+
+      this.questions.ask.call(this.questions, names, options, function(err, answers) {
+        if (err) return cb(err);
+
+        for (var key in answers) {
+          app.set(['cache.answers', key], answers[key]);
+        }
+
+        cb(null, answers);
+      });
     });
 
     return plugin;
