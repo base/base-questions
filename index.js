@@ -39,13 +39,15 @@ module.exports = function(config, fn) {
       // return cached instance
       if (fn._questions) return fn._questions;
 
+      var cwd = app.cwd || process.cwd();
       var opts = utils.merge({}, app.options, config);
       opts.data = app.cache.data || {};
-      opts.cwd = app.cwd || process.cwd();
+      opts.cwd = cwd;
 
       var Questions = app.Questions;
       var questions = new Questions(opts);
       fn._questions = questions;
+      questions.cwd = cwd;
 
       var data = questions.data;
       questions.on('ask', app.emit.bind(app, 'ask'));
