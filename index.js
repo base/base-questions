@@ -16,13 +16,26 @@ module.exports = function(config, fn) {
     debug('initializing from <%s>', __filename);
 
     this.define('Questions', this.options.questions || utils.Questions);
+    app.cache.answers = app.cache.answers || {};
+
+    /**
+     * Events
+     */
 
     this.on('ask', function(val, key, question, answers) {
       var data = utils.merge({}, answers, app.store.data, app.cache.answers, app.cache.data);
       if (app.option('common-config') !== false) {
         data = utils.merge({}, app.questions.common.data, data);
       }
-      utils.set(answers, key, utils.get(data, key));
+      var answer = utils.get(data, key);
+      if (answer) {
+        utils.set(answers, key, answer);
+      }
+    });
+
+    this.on('answer', function(val, key, question, answers) {
+      app.base.data(key, val);
+      app.data(key, val);
     });
 
     /**
@@ -207,11 +220,16 @@ module.exports = function(config, fn) {
         names = this.questions.queue;
       }
 
-      this.questions.ask.call(this.questions, names, options, function(err, answers) {
+      var opts = utils.extend({}, options);
+      opts.data = utils.merge({}, app.store.data, app.cache.answers, app.cache.data);
+
+      this.questions.ask.call(this.questions, names, opts, function(err, answers) {
         if (err) return cb(err);
 
         for (var key in answers) {
-          app.set(['cache.answers', key], answers[key]);
+          if (answers.hasOwnProperty(key) && answers[key]) {
+            app.set(['cache.answers', key], answers[key]);
+          }
         }
 
         cb(null, answers);

@@ -14,6 +14,7 @@ require = utils;
 
 require('clone-deep', 'clone');
 require('define-property', 'define');
+require('extend-shallow', 'extend');
 require('get-value', 'get');
 require('is-valid-app', 'isValid');
 require('isobject', 'isObject');
