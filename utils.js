@@ -12,6 +12,7 @@ require = utils;
  * Lazily required module dependencies
  */
 
+require('base-store', 'store');
 require('clone-deep', 'clone');
 require('define-property', 'define');
 require('extend-shallow', 'extend');
