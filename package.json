@@ -23,7 +23,7 @@
   "dependencies": {
     "base-store": "^0.4.4",
     "clone-deep": "^0.2.4",
-    "debug": "^2.2.0",
+    "debug": "^3.1.0",
     "define-property": "^0.2.5",
     "extend-shallow": "^2.0.1",
     "get-value": "^2.0.6",
